@@ -16,19 +16,31 @@ jobs:
         id: dependabot-metadata
         uses: dependabot/fetch-metadata@v1.3.1
 
+      - name: Read whitelisted libraries from file
+        id: read-whitelist
+        run: |
+          whitelisted_file_path="whitelisted_libraries.json"
+          if [ -f "$whitelisted_file_path" ]; then
+            whitelisted_libraries=$(jq -r '.whitelisted_libraries | .[] | .library' "$whitelisted_file_path")
+            reasons=$(jq -r '.whitelisted_libraries | .[] | .reason' "$whitelisted_file_path")
+            IFS=$'\n' read -d '' -r -a libraries_array <<< "$whitelisted_libraries"
+            IFS=$'\n' read -d '' -r -a reasons_array <<< "$reasons"
+            echo "::set-output name=whitelisted::true"
+          else
+            echo "Whitelisted libraries file not found!"
+            echo "::set-output name=whitelisted::false"
+          fi
+
       - name: Check if PR is from a whitelisted library
         id: whitelist-check
+        if: steps.read-whitelist.outputs.whitelisted == 'true'
         run: |
-          whitelisted_libraries=(
-              "github.com/google/go-cmp:I like this library"
-              "github.com/xorm:I love this library too"
-          )
           pr_title=$(jq --raw-output .pull_request.title "$GITHUB_EVENT_PATH")
           is_whitelisted=false
           whitelist_reason=""
-          for library_reason in "${whitelisted_libraries[@]}"; do
-            library=$(echo "$library_reason" | cut -d ':' -f 1)
-            reason=$(echo "$library_reason" | cut -d ':' -f 2)
+          for index in "${!libraries_array[@]}"; do
+            library=${libraries_array[$index]}
+            reason=${reasons_array[$index]}
             if [[ $pr_title == *"$library"* ]]; then
               is_whitelisted=true
               whitelist_reason=$reason
@@ -36,8 +48,7 @@ jobs:
             fi
           done
           echo "::set-output name=whitelisted::$is_whitelisted"
-          echo "::set-output name=reason::$whitelist_reason"          
-      ##
+          echo "::set-output name=reason::$whitelist_reason"               
       # - name: Enable auto-merge for Dependabot PRs
       #   run: gh pr merge --auto --merge "$PR_URL"
       #   env:

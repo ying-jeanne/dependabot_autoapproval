@@ -19,6 +19,8 @@ jobs:
       - name: Read whitelisted libraries from file
         id: read-whitelist
         run: |
+          current_path=$(pwd)
+          echo "Current path: $current_path"
           whitelisted_file_path="whitelisted_libraries.json"
           if [ -f "$whitelisted_file_path" ]; then
             whitelisted_libraries=$(jq -r '.whitelisted_libraries | .[] | .library' "$whitelisted_file_path")

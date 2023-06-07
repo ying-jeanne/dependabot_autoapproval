@@ -1,5 +1,7 @@
-name: Dependabot reviewer
+# Auto-merge as documented in official Github docs
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions
 
+name: Auto-review Dependabot PRs
 on: pull_request_target
 
 permissions:
@@ -7,68 +9,80 @@ permissions:
   contents: write
 
 jobs:
-  review-dependabot-pr:
+  dependabot-reviewer:
     runs-on: ubuntu-latest
+
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
-
+    
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
       - name: Dependabot metadata
-        id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v1.3.1
+        id: metadata
+        uses: dependabot/fetch-metadata@v1.5.1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Read whitelisted libraries from file
-        id: read-whitelist
+      - name: Check Whitelist
+        id: check-whitelist
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
         run: |
-          whitelisted_file_path="whitelisted_libraries.json"
-          if [ -f "$whitelisted_file_path" ]; then
-            whitelisted_libraries=$(jq -r '.whitelisted_libraries | .[] | .library' "$whitelisted_file_path")
-            reasons=$(jq -r '.whitelisted_libraries | .[] | .reason' "$whitelisted_file_path")
-            IFS=$'\n' read -d '' -r -a libraries_array <<< "$whitelisted_libraries"
-            IFS=$'\n' read -d '' -r -a reasons_array <<< "$reasons"
-            echo "::set-output name=whitelisted::true"
-          else
-            echo "Whitelisted libraries file not found!"
-            echo "::set-output name=whitelisted::false"
-          fi
+          cfg_path=".github/workflows/whitelist.json"
+        
+          IFS=', ' read -r -a libsUpdated <<< "${{ steps.metadata.outputs.dependency-names }}"
 
-      - name: Check if PR is from a whitelisted library
-        id: whitelist-check
-        if: steps.read-whitelist.outputs.whitelisted == 'true'
-        run: |
-          pr_title=$(jq --raw-output .pull_request.title "$GITHUB_EVENT_PATH")
-          is_whitelisted=false
-          whitelist_reason=""
-          for index in "${!libraries_array[@]}"; do
-            library=${libraries_array[$index]}
-            reason=${reasons_array[$index]}
-            if [[ $pr_title == *"$library"* ]]; then
-              is_whitelisted=true
-              whitelist_reason=$reason
+          # Loop through the array to make sure all updated libraries are whitelisted
+          all_in_whitelist="true"
+          reason_array=()
+
+          # If any element is not in the whitelist, set the flag to false
+          for lib in "${libsUpdated[@]}"; do
+            exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' $cfg_path)
+            if [[ "$exists" != "true" ]]; then
+              echo "$lib is not in the whitelist, manual review is required."
+              all_in_whitelist="false"
               break
+            else
+              reason_array+=("$(jq -r --arg lib "$lib" '.[] | select(.name == $lib) | .reason' $cfg_path)")
             fi
           done
-          echo "::set-output name=whitelisted::$is_whitelisted"
-          echo "::set-output name=reason::$whitelist_reason"               
-      ##
-      # - name: Enable auto-merge for Dependabot PRs
-      #   run: gh pr merge --auto --merge "$PR_URL"
-      #   env:
-      #     PR_URL: ${{github.event.pull_request.html_url}}
-      #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Approve patch and minor updates
-        if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'}}
-        run: gh pr review $PR_URL --approve -b "I'm **approving** this pull request because **it includes a patch or minor update**"
+          if [[ "$all_in_whitelist" == "true" ]]; then
+            reasons=$(IFS=','; echo "${reason_array[*]}")
+            echo "All dependencies are in the whitelist. with reason $reasons"
+            echo "::set-output name=reasons::$reasons"
+            echo "::set-output name=allInWhitelist::true"
+          else
+            echo "Not all dependencies are in the whitelist."
+            echo "::set-output name=allInWhitelist::false"
+          fi
+
+      - name: Approve and auto-merge
+        if: steps.check-whitelist.conclusion == 'success' && steps.check-whitelist.outputs.allInWhitelist == 'true'
+        run: |
+          gh pr merge --auto --squash "$PR_URL"
+          gh pr review $PR_URL \
+          --approve -b "**I'm approving** this pull request because it includes a patch or minor \
+          update to dependencies that are already whitelisted.
+
+          The reason this library is whitelisted is that ${{ steps.check-whitelist.outputs.reasons}}"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+      - name: Manual review is required
+        if: steps.check-whitelist.conclusion != 'success' || steps.check-whitelist.outputs.allInWhitelist == 'false'
+        run: |
+          gh pr comment $PR_URL --body "**This library is not auto-approved**
 
-      # - name: Comment on major updates of non-development dependencies
-      #   if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'}}
-      #   run: |
-      #     gh pr comment $PR_URL --body "I'm **not approving** this PR because **it includes a major update of a dependency used in production**"
-      #     gh pr edit $PR_URL --add-label "requires-manual-review"
-      #   env:
-      #     PR_URL: ${{github.event.pull_request.html_url}}
-      #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          Unfortunately, this library is not included in our whitelist, which means it cannot be auto-approved. \
+          If you believe it should be considered for auto-approval, please open a pull request to add \
+          it to the whitelist configuration. 
+
+          To add this library to the whitelist, please modify the [whitelist.json](https://https://github.com/grafana/mimir/.github/workflow/whitelist.json) file and \
+          include the necessary details for review."
+
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

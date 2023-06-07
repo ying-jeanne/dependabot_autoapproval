@@ -16,6 +16,27 @@ jobs:
         id: dependabot-metadata
         uses: dependabot/fetch-metadata@v1.3.1
 
+      - name: Check if PR is from a whitelisted library
+        id: whitelist-check
+        run: |
+          whitelisted_libraries=(
+              "github.com/google/go-cmp:I like this library"
+              "github.com/xorm:I love this library too"
+          )
+          pr_title=$(jq --raw-output .pull_request.title "$GITHUB_EVENT_PATH")
+          is_whitelisted=false
+          whitelist_reason=""
+          for library_reason in "${whitelisted_libraries[@]}"; do
+            library=$(echo "$library_reason" | cut -d ':' -f 1)
+            reason=$(echo "$library_reason" | cut -d ':' -f 2)
+            if [[ $pr_title == *"$library"* ]]; then
+              is_whitelisted=true
+              whitelist_reason=$reason
+              break
+            fi
+          done
+          echo "::set-output name=whitelisted::$is_whitelisted"
+          echo "::set-output name=reason::$whitelist_reason"          
       ##
       # - name: Enable auto-merge for Dependabot PRs
       #   run: gh pr merge --auto --merge "$PR_URL"
@@ -29,6 +50,7 @@ jobs:
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
 
       # - name: Comment on major updates of non-development dependencies
       #   if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'}}

@@ -3,7 +3,7 @@ module github.com/ying-jeanne/dependabot_autoapproval
 go 1.20
 
 require (
-	github.com/fatih/color v1.13.0
+	github.com/fatih/color v1.15.0
 	github.com/google/go-cmp v0.4.0
 )
 

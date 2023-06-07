@@ -8,6 +8,6 @@ updates:
   - package-ecosystem: gomod
     directory: /
     schedule:
-      interval: "weekly"
-      time: "06:02"
+      interval: "daily"
+      time: "21:29"
     open-pull-requests-limit: 5 

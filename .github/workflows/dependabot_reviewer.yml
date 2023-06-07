@@ -20,6 +20,7 @@ jobs:
         id: read-whitelist
         run: |
           whitelisted_file_path="$(pwd)/whitelisted_libraries.json"
+          echo "whitelist value: $(whitelisted_file_path)"
           if [ -f "$whitelisted_file_path" ]; then
             whitelisted_libraries=$(jq -r '.whitelisted_libraries | .[] | .library' "$whitelisted_file_path")
             reasons=$(jq -r '.whitelisted_libraries | .[] | .reason' "$whitelisted_file_path")

@@ -13,18 +13,23 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
-      - uses: actions/checkout@v2
-      # - name: Dependabot metadata
-      #   id: metadata
-      #   uses: dependabot/fetch-metadata@v1.5.1
-      #   with:
-      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
-      
-      - name: Define automerge strategy
-        id: automerge-strategy
-        run: | 
-          minorWhitelist=fromJson('[
-                "alpine",
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1.5.1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Approve and auto-merge
+        # See https://github.com/dependabot/fetch-metadata for the outputs
+        # If blocks:
+        #  - Patches to auto-merge
+        #  - Minor updates to auto-merge
+        #  - Updates to auto-merge regardless of level (major, minor or patch)
+        #  - Projects that should be auto-merged regardless of level (major, minor or patch)
+        if: |
+          (
+            (
+              contains(fromJson('[
+                "alpine", # here because I like it
                 "golang",
                 "gorm.io/driver/sqlite",
                 "github.com/anchore/grype",
@@ -41,73 +46,13 @@ jobs:
                 "k8s.io/apimachinery",
                 "k8s.io/client-go",
                 "Sonia-corporation/stale"
-              ]')
-
-          # patchWhitelist=fromJson('[
-          #   {"name": "github.com/xlab/treeprint", "reason": "only used by test"}
-          # ]')
-
-          # minorlist = fromJSON(minorWhitelist).*.name
-          # patchlist = toJson(patchWhitelist.*.name)
-
-          # Store the JSON data in the output variable
-          echo "minorWhitelist=$minorWhitelist" >> $GITHUB_ENV
-          # echo "patchlist=$patchlist" >> $GITHUB_ENV
-
-      - name: Approve and auto-merge
+              ]'), "Sonia-corporation/stale")
+            )
+            # && steps.metadata.outputs.update-type == 'version-update:semver-patch'
+          )
         run: |
-          # echo $patchlist
-          echo $minorWhitelist
-        env: 
-          # patchlist: ${{ env.patchlist }}
-          minorlist: ${{ env.minorWhitelist }}
-      #   # We 
-      #   if: |
-      #     (
-      #       (
-      #         contains(fromJson('[
-      #           "alpine", 
-      #           "golang",
-      #           "gorm.io/driver/sqlite",
-      #           "github.com/anchore/grype",
-      #           "github.com/aquasecurity/trivy",
-      #           "github.com/aws/aws-sdk-go-v2/config",
-      #           "github.com/bmatcuk/doublestar/v4",
-      #           "github.com/caarlos0/env/v6",
-      #           "github.com/prometheus/client_golang",
-      #           "github.com/sirupsen/logrus",
-      #           "github.com/slack-go/slack",
-      #           "github.com/urfave/cli",
-      #           "github.com/urfave/cli/v2",
-      #           "k8s.io/api",
-      #           "k8s.io/apimachinery",
-      #           "k8s.io/client-go",
-      #           "Sonia-corporation/stale"
-      #         ]'), steps.metadata.outputs.dependency-names)
-      #       )
-      #       && steps.metadata.outputs.update-type == 'version-update:semver-patch'
-      #     )
-      #     ||
-      #     (
-      #       (
-      #         contains(fromJson('[
-      #           "google.golang.org/api"
-      #         ]'), steps.metadata.outputs.dependency-names)
-      #       )
-      #       && steps.metadata.outputs.update-type == 'version-update:semver-minor'
-      #     )
-      #     ||
-      #     (
-      #       contains(fromJson('[
-      #         "github.com/stretchr/testify",
-      #         "google/cloud-sdk"
-      #       ]'), steps.metadata.outputs.dependency-names)
-      #     )
-      #   # Keep the "enable auto-merge" -> approve order.
-      #   # If auto-merge is already enabled, approving will trigger the merge and the job will fail trying to enable auto-merge.
-      #   run: |
-      #     gh pr merge --auto --squash "$PR_URL"
-      #     gh pr review --approve "$PR_URL"
-      #   env:
-      #     PR_URL: ${{github.event.pull_request.html_url}}
-      #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          gh pr merge --auto --squash "$PR_URL"
+          gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

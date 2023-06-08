@@ -19,6 +19,7 @@ jobs:
       - name: Read Setting File
         id: read-json
         run: |
+          ls
           json_data=$(cat whitelist.json)
           echo "::set-output name=jsonData::$json_data"    
 

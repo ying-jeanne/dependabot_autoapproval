@@ -20,8 +20,11 @@ jobs:
         id: read-json
         run: |
           ls
-          json_data=$(cat whitelist.json)
-          echo "::set-output name=jsonData::$json_data"    
+          content=$(cat whitelist.json)
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=jsonData::$content"    
 
       - name: Extract whitelist libraries
         run: |

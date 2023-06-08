@@ -25,7 +25,7 @@ jobs:
 
       - name: Extract whitelist libraries
         run: |
-          json_data="${{ steps.read-json.outputs.jsonData }}"
+          json_data="${{steps.read-json.outputs.jsonData}}"
           libs=$(echo "$json_data" | jq -r '.items[] | .name, .reason')
           echo "Names and Reasons: $libs"
       # - name: Dependabot metadata

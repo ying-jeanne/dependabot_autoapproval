@@ -1,16 +1,14 @@
-{
-    "whitelisted_libraries": [
-      {
-        "library": "library1",
-        "reason": "Reason 1"
-      },
-      {
-        "library": "library2",
-        "reason": "Reason 2"
-      },
-      {
-        "library": "library3",
-        "reason": "Reason 3"
-      }
-    ]
+[
+  {
+    "name": "library1",
+    "reason": "Reason 1"
+  },
+  {
+    "name": "library2",
+    "reason": "Reason 2"
+  },
+  {
+    "name": "library3",
+    "reason": "Reason 3"
   }
+]

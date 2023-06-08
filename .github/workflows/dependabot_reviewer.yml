@@ -11,43 +11,57 @@ permissions:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' }}
+    # if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Read Setting File
+        id: read-json
+        run: |
+          json_data=$(cat whitelist.json)
+          echo "::set-output name=jsonData::$json_data"    
+
+      - name: Extract whitelist libraries
+        run: |
+          json_data="${{ steps.read-json.outputs.jsonData }}"
+          libs=$(echo "$json_data" | jq -r '.items[] | .name, .reason')
+          echo "Names and Reasons: $libs"
       # - name: Dependabot metadata
       #   id: metadata
       #   uses: dependabot/fetch-metadata@v1.5.1
       #   with:
       #     github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Approve and auto-merge
+      # - name: Approve and auto-merge
         # See https://github.com/dependabot/fetch-metadata for the outputs
         # If blocks:
         #  - Patches to auto-merge
         #  - Minor updates to auto-merge
         #  - Updates to auto-merge regardless of level (major, minor or patch)
         #  - Projects that should be auto-merged regardless of level (major, minor or patch)
-        if: |
-          contains(fromJson('[
-            "alpine", # here because I like it
-            "golang",
-            "gorm.io/driver/sqlite",
-            "github.com/anchore/grype",
-            "github.com/aquasecurity/trivy",
-            "github.com/aws/aws-sdk-go-v2/config",
-            "github.com/bmatcuk/doublestar/v4",
-            "github.com/caarlos0/env/v6",
-            "github.com/prometheus/client_golang",
-            "github.com/sirupsen/logrus",
-            "github.com/slack-go/slack",
-            "github.com/urfave/cli",
-            "github.com/urfave/cli/v2",
-            "k8s.io/api",
-            "k8s.io/apimachinery",
-            "k8s.io/client-go",
-            "Sonia-corporation/stale"
-          ]'), 'Sonia-corporation/stale')
-        run: |
-          gh pr merge --auto --squash "$PR_URL"
-          gh pr review --approve "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        # if: |
+        #   contains(fromJson('[
+        #     "alpine", # here because I like it
+        #     "golang",
+        #     "gorm.io/driver/sqlite",
+        #     "github.com/anchore/grype",
+        #     "github.com/aquasecurity/trivy",
+        #     "github.com/aws/aws-sdk-go-v2/config",
+        #     "github.com/bmatcuk/doublestar/v4",
+        #     "github.com/caarlos0/env/v6",
+        #     "github.com/prometheus/client_golang",
+        #     "github.com/sirupsen/logrus",
+        #     "github.com/slack-go/slack",
+        #     "github.com/urfave/cli",
+        #     "github.com/urfave/cli/v2",
+        #     "k8s.io/api",
+        #     "k8s.io/apimachinery",
+        #     "k8s.io/client-go",
+        #     "Sonia-corporation/stale"
+        #   ]'), 'Sonia-corporation/stale')
+        # run: |
+        #   gh pr merge --auto --squash "$PR_URL"
+        #   gh pr review --approve "$PR_URL"
+        # env:
+        #   PR_URL: ${{github.event.pull_request.html_url}}
+        #   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

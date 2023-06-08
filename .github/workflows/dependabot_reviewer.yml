@@ -27,9 +27,9 @@ jobs:
           all_in_whitelist="true"
 
           # if one of the element not in white list, set flag to false
-          for i in "${libsUpdated[@]}"
+          for lib in "${libsUpdated[@]}"
             do
-              exists = $(cat whitelist.json | jq 'any(.[]; .name == $1)')
+              exists = $(cat whitelist.json | jq 'any(.[]; .name == $lib)')
               if "$exists" == "false"; then
                  all_in_whitelist="false";
                  break;

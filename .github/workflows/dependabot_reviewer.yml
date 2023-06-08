@@ -30,14 +30,20 @@ jobs:
             {"name": "github.com/xlab/treeprint", "reason": "only used by test"}
           ]
 
-          minorlist = minorWhitelist.*.name
-          patchlist = patchWhitelist.*.name
+          minorlist = toJson(minorWhitelist.*.name)
+          patchlist = toJson(patchWhitelist.*.name)
 
           # Store the JSON data in the output variable
-          echo "::set-output name=minorlist::$minorlist
-          echo "::set-output name=patchlist::$patchlist
+          echo "minorlist=$minorlist" >> $GITHUB_ENV
+          echo "patchlist=$patchlist" >> $GITHUB_ENV
 
-      # - name: Approve and auto-merge
+      - name: Approve and auto-merge
+        run: |
+          echo $patchlist
+          echo $minorlist
+        env: 
+          patchlist: ${{ env.patchlist }}
+          minorlist: ${{ env.minorlist }}
       #   # We 
       #   if: |
       #     (

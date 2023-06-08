@@ -33,10 +33,13 @@ jobs:
           # loop on the array to make sure all libraries updated are whitelisted
           all_in_whitelist="true"
 
+
+          echo "This is a log messagexxxxxxxxxxxxxxxxxxxxxxxxxxxx"
           # if one of the element not in white list, set flag to false
           for lib in "${libsUpdated[@]}"
             do
               exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' whitelist.json)
+              echo "This is a log messagexxxxxxxxxxxxxxxxxxxxxxxxxxxx $lib"
               if "$exists" == "false"; then
                  all_in_whitelist="false";
                  break;

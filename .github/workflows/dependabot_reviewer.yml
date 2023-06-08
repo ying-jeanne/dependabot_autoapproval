@@ -20,17 +20,17 @@ jobs:
         id: check-whitelist
         run: |
           names_to_check='["library2", "library3", "library5"]'
-
           is_in_whitelist="false"
-          contains_all_names=$(cat whitelist.json | jq --argjson names "$names_to_check" 'all($names[]; .name)')
+          names=$(cat whitelist.json | jq -r '.[].name')
 
-          if [[ "$contains_all_names" == "true" ]]; then
-            echo "All names are in the whitelist."
-            echo "::set-output name=allInWhitelist::true"
-          else
-            echo "Not all names are in the whitelist."
-            echo "::set-output name=allInWhitelist::false"
-          fi
+          for name in $names_to_check; do
+            if ! grep -q "${name}" <<< "$names"; then
+              all_in_whitelist="false"
+              break
+            fi
+          done
+
+
       # - name: Dependabot metadata
       #   id: metadata
       #   uses: dependabot/fetch-metadata@v1.5.1

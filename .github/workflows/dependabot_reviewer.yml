@@ -1,75 +1,90 @@
-name: Dependabot reviewer
+# Auto-merge as documented in official Github docs
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions
 
-on: pull_request_target
+name: Auto-merge Dependabot PRs
+on: pull_request
 
 permissions:
   pull-requests: write
   contents: write
 
 jobs:
-  review-dependabot-pr:
+  auto-merge:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
-
+    if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
-      - name: Dependabot metadata
-        id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v1.3.1
+      # - name: Dependabot metadata
+      #   id: metadata
+      #   uses: dependabot/fetch-metadata@v1.5.1
+      #   with:
+      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
+      
+      - name: Define automerge strategy
+        id: automerge-strategy
+        run: | 
+          minorWhitelist=[
+            {"name": "github.com/aws/aws-sdk-go", "reason": "no issue since"}
+          ]
 
-      - name: Read whitelisted libraries from file
-        id: read-whitelist
-        run: |
-          whitelisted_file_path="$(pwd)/whitelisted_libraries.json"
-          echo "whitelist value: $(whitelisted_file_path)"
-          if [ -f "$whitelisted_file_path" ]; then
-            whitelisted_libraries=$(jq -r '.whitelisted_libraries | .[] | .library' "$whitelisted_file_path")
-            reasons=$(jq -r '.whitelisted_libraries | .[] | .reason' "$whitelisted_file_path")
-            IFS=$'\n' read -d '' -r -a libraries_array <<< "$whitelisted_libraries"
-            IFS=$'\n' read -d '' -r -a reasons_array <<< "$reasons"
-            echo "::set-output name=whitelisted::true"
-          else
-            echo "Whitelisted libraries file not found!"
-            echo "::set-output name=whitelisted::false"
-          fi
+          patchWhitelist=[
+            {"name": "github.com/xlab/treeprint", "reason": "only used by test"}
+          ]
 
-      - name: Check if PR is from a whitelisted library
-        id: whitelist-check
-        if: steps.read-whitelist.outputs.whitelisted == 'true'
-        run: |
-          pr_title=$(jq --raw-output .pull_request.title "$GITHUB_EVENT_PATH")
-          is_whitelisted=false
-          whitelist_reason=""
-          for index in "${!libraries_array[@]}"; do
-            library=${libraries_array[$index]}
-            reason=${reasons_array[$index]}
-            if [[ $pr_title == *"$library"* ]]; then
-              is_whitelisted=true
-              whitelist_reason=$reason
-              break
-            fi
-          done
-          echo "::set-output name=whitelisted::$is_whitelisted"
-          echo "::set-output name=reason::$whitelist_reason"               
-      ##
-      # - name: Enable auto-merge for Dependabot PRs
-      #   run: gh pr merge --auto --merge "$PR_URL"
-      #   env:
-      #     PR_URL: ${{github.event.pull_request.html_url}}
-      #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          minorlist = minorWhitelist.*.name
+          patchlist = patchWhitelist.*.name
 
-      - name: Approve patch and minor updates
-        if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'}}
-        run: gh pr review $PR_URL --approve -b "I'm **approving** this pull request because **it includes a patch or minor update**"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          # Store the JSON data in the output variable
+          echo "::set-output name=minorlist::$minorlist
+          echo "::set-output name=patchlist::$patchlist
 
-
-      # - name: Comment on major updates of non-development dependencies
-      #   if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'}}
+      # - name: Approve and auto-merge
+      #   # We 
+      #   if: |
+      #     (
+      #       (
+      #         contains(fromJson('[
+      #           "alpine", 
+      #           "golang",
+      #           "gorm.io/driver/sqlite",
+      #           "github.com/anchore/grype",
+      #           "github.com/aquasecurity/trivy",
+      #           "github.com/aws/aws-sdk-go-v2/config",
+      #           "github.com/bmatcuk/doublestar/v4",
+      #           "github.com/caarlos0/env/v6",
+      #           "github.com/prometheus/client_golang",
+      #           "github.com/sirupsen/logrus",
+      #           "github.com/slack-go/slack",
+      #           "github.com/urfave/cli",
+      #           "github.com/urfave/cli/v2",
+      #           "k8s.io/api",
+      #           "k8s.io/apimachinery",
+      #           "k8s.io/client-go",
+      #           "Sonia-corporation/stale"
+      #         ]'), steps.metadata.outputs.dependency-names)
+      #       )
+      #       && steps.metadata.outputs.update-type == 'version-update:semver-patch'
+      #     )
+      #     ||
+      #     (
+      #       (
+      #         contains(fromJson('[
+      #           "google.golang.org/api"
+      #         ]'), steps.metadata.outputs.dependency-names)
+      #       )
+      #       && steps.metadata.outputs.update-type == 'version-update:semver-minor'
+      #     )
+      #     ||
+      #     (
+      #       contains(fromJson('[
+      #         "github.com/stretchr/testify",
+      #         "google/cloud-sdk"
+      #       ]'), steps.metadata.outputs.dependency-names)
+      #     )
+      #   # Keep the "enable auto-merge" -> approve order.
+      #   # If auto-merge is already enabled, approving will trigger the merge and the job will fail trying to enable auto-merge.
       #   run: |
-      #     gh pr comment $PR_URL --body "I'm **not approving** this PR because **it includes a major update of a dependency used in production**"
-      #     gh pr edit $PR_URL --add-label "requires-manual-review"
+      #     gh pr merge --auto --squash "$PR_URL"
+      #     gh pr review --approve "$PR_URL"
       #   env:
       #     PR_URL: ${{github.event.pull_request.html_url}}
       #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

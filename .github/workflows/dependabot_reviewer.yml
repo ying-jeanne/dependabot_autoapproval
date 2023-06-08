@@ -27,63 +27,50 @@ jobs:
         id: check-whitelist
         if: ${{steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'}}
         run: |
+          # set the path to configuration file
+          cfg_path=".github/workflows/whitelist.json"
+          
           # read dependencies into an array libsUpdated
           IFS=', ' read -r -a libsUpdated <<< "${{ steps.metadata.outputs.dependency-names }}"
 
           # loop on the array to make sure all libraries updated are whitelisted
           all_in_whitelist="true"
 
+          reason_array=()
           # if one of the element not in white list, set flag to false
           for lib in "${libsUpdated[@]}"
             do
-              exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' whitelist.json)
-              echo "xxxxxxxxxxxxxxxxxxxxxxxxxxx, $lib, $exists"
+              exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' $cfg_path)
               if [[ "$exists" != "true" ]]; then
-                 all_in_whitelist="false";
-                 break;
+                echo "$lib is not in the whitelist, manual review is required."
+                all_in_whitelist="false";
+                break;
+              else
+                reason_array+=(jq 'select(.[] | select(.name == "$lib") | .reason)' $cfg_path)
               fi
             done
 
           if [[ "$all_in_whitelist" == "true" ]]; then
-            echo "Output value is true."
+            echo "All dependencies are in the whitelist."
+            reasons=$(IFS=','; echo "${reason_array[*]}")
+            echo "::set-output name=reasons::$reasons"
             echo "::set-output name=allInWhitelist::true"
           else
-            echo "Output value is false."
+            echo "Not all dependencies are in the whitelist."
             echo "::set-output name=allInWhitelist::false"
           fi
 
       - name: Approve and auto-merge
         if: steps.check-whitelist.conclusion == 'success' && steps.check-whitelist.outputs.allInWhitelist == 'true'
-        # See https://github.com/dependabot/fetch-metadata for the outputs
-        # If blocks:
-        #  - Patches to auto-merge
-        #  - Minor updates to auto-merge
-        #  - Updates to auto-merge regardless of level (major, minor or patch)
-        #  - Projects that should be auto-merged regardless of level (major, minor or patch)
-        # if: |
-        #   contains(fromJson('[
-        #     "alpine",
-        #     "golang",
-        #     "gorm.io/driver/sqlite",
-        #     "github.com/anchore/grype",
-        #     "github.com/aquasecurity/trivy",
-        #     "github.com/aws/aws-sdk-go-v2/config",
-        #     "github.com/bmatcuk/doublestar/v4",
-        #     "github.com/caarlos0/env/v6",
-        #     "github.com/prometheus/client_golang",
-        #     "github.com/sirupsen/logrus",
-        #     "github.com/slack-go/slack",
-        #     "github.com/urfave/cli",
-        #     "github.com/urfave/cli/v2",
-        #     "k8s.io/api",
-        #     "k8s.io/apimachinery",
-        #     "k8s.io/client-go",
-        #     "Sonia-corporation/stale"
-        #   ]'), 'Sonia-corporation/stale')
         run: |
-          # echo "Output value is true."
           gh pr merge --auto --squash "$PR_URL"
-          gh pr review $PR_URL --approve -b "I'm **approving** this pull request because **it includes a patch or minor update in whitelist**"
+          gh pr review $PR_URL \
+          --approve -b "I'm **approving** this pull request because it includes **a patch or minor update in \
+          whitelist**, with reason ${{ steps.check-whitelist.outputs.reasons}}."
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      # - name: Manual review is required
+      #   if: steps.check-whitelist.conclusion != 'success' || steps.check-whitelist.outputs.allInWhitelist == 'false'
+      #   run:

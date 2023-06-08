@@ -1,0 +1,10 @@
+[
+  {
+    "name": "github.com/fatih/color",
+    "reason": "The library is only used in test"
+  },
+  {
+    "name": "github.com/google/uuid",
+    "reason": "The library is stable and has no known vulnerabilities"
+  }
+]

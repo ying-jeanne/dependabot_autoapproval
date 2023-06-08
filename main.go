@@ -3,18 +3,37 @@ package main
 import (
 	"fmt"
 
-	"github.com/fatih/color"
-	"github.com/google/go-cmp/cmp"
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
-func main() {
-	color.Green("Hello, World!")
+type User struct {
+	ID       uuid.UUID `validate:"required"`
+	Username string    `validate:"required"`
+	Email    string    `validate:"required,email"`
+}
 
-	// Example usage of go-cmp library
-	want := []int{1, 2, 3}
-	got := []int{1, 2, 4}
-	if diff := cmp.Diff(want, got); diff != "" {
-		fmt.Println("Difference found:")
-		fmt.Println(diff)
+func main() {
+	// Generate a UUID
+	id := uuid.New()
+
+	// Create a new user
+	user := User{
+		ID:       id,
+		Username: "john123",
+		Email:    "john@example.com",
 	}
+
+	// Validate the user struct
+	validate := validator.New()
+	err := validate.Struct(user)
+	if err != nil {
+		fmt.Println("Validation error:", err)
+		return
+	}
+
+	// Print the user details
+	fmt.Println("User ID:", user.ID)
+	fmt.Println("Username:", user.Username)
+	fmt.Println("Email:", user.Email)
 }

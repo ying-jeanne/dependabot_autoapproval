@@ -28,7 +28,7 @@ jobs:
         if: ${{steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'}}
         run: |
           # read dependencies into an array libsUpdated
-          IFS=', ' read -r -a libsUpdated <<< "${{ steps.fetch-metadata.outputs.dependency-names }}"
+          IFS=', ' read -r -a libsUpdated <<< "${{ steps.metadata.outputs.dependency-names }}"
 
           # loop on the array to make sure all libraries updated are whitelisted
           all_in_whitelist="true"
@@ -37,6 +37,7 @@ jobs:
           for lib in "${libsUpdated[@]}"
             do
               exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' whitelist.json)
+              echo "xxxxxxxxxxxxxxxxxxxxxxxxxxx, $lib, $exists"
               if [[ "$exists" != "true" ]]; then
                  all_in_whitelist="false";
                  break;

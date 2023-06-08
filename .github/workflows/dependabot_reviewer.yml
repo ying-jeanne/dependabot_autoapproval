@@ -26,30 +26,25 @@ jobs:
         #  - Updates to auto-merge regardless of level (major, minor or patch)
         #  - Projects that should be auto-merged regardless of level (major, minor or patch)
         if: |
-          (
-            (
-              contains(fromJson('[
-                "alpine", # here because I like it
-                "golang",
-                "gorm.io/driver/sqlite",
-                "github.com/anchore/grype",
-                "github.com/aquasecurity/trivy",
-                "github.com/aws/aws-sdk-go-v2/config",
-                "github.com/bmatcuk/doublestar/v4",
-                "github.com/caarlos0/env/v6",
-                "github.com/prometheus/client_golang",
-                "github.com/sirupsen/logrus",
-                "github.com/slack-go/slack",
-                "github.com/urfave/cli",
-                "github.com/urfave/cli/v2",
-                "k8s.io/api",
-                "k8s.io/apimachinery",
-                "k8s.io/client-go",
-                "Sonia-corporation/stale"
-              ]'), "Sonia-corporation/stale")
-            )
-            # && steps.metadata.outputs.update-type == 'version-update:semver-patch'
-          )
+          contains(fromJson('[
+            "alpine", # here because I like it
+            "golang",
+            "gorm.io/driver/sqlite",
+            "github.com/anchore/grype",
+            "github.com/aquasecurity/trivy",
+            "github.com/aws/aws-sdk-go-v2/config",
+            "github.com/bmatcuk/doublestar/v4",
+            "github.com/caarlos0/env/v6",
+            "github.com/prometheus/client_golang",
+            "github.com/sirupsen/logrus",
+            "github.com/slack-go/slack",
+            "github.com/urfave/cli",
+            "github.com/urfave/cli/v2",
+            "k8s.io/api",
+            "k8s.io/apimachinery",
+            "k8s.io/client-go",
+            "Sonia-corporation/stale"
+          ]'), "Sonia-corporation/stale")
         run: |
           gh pr merge --auto --squash "$PR_URL"
           gh pr review --approve "$PR_URL"

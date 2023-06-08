@@ -44,7 +44,7 @@ jobs:
             "k8s.io/apimachinery",
             "k8s.io/client-go",
             "Sonia-corporation/stale"
-          ]'), "Sonia-corporation/stale")
+          ]'), 'Sonia-corporation/stale')
         run: |
           gh pr merge --auto --squash "$PR_URL"
           gh pr review --approve "$PR_URL"

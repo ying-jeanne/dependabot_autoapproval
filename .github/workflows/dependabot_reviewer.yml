@@ -26,6 +26,9 @@ jobs:
         if: |
           contains(fromJson(${{steps.read-json.outputs.jsonData}}), 'library4')
         run: |
+          echo ${{steps.read-json.outputs.jsonData}}
+          echo "xxxxxxx"
+          echo fromJson(${{steps.read-json.outputs.jsonData}})
           echo "I love you"
       # - name: Dependabot metadata
       #   id: metadata

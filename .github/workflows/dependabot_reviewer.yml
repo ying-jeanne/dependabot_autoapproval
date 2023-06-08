@@ -27,7 +27,7 @@ jobs:
 
       - name: Extract whitelist libraries
         if: |
-          contains(fromJson(${{steps.read-json.outputs.jsonData}}), '1')
+          contains(fromJson(${{steps.read-json.outputs.jsonData}}), 'library1')
         run: |
           echo "I love you"
       # - name: Dependabot metadata

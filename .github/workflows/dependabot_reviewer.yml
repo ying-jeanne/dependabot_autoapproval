@@ -16,10 +16,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      # - name: Dependabot metadata
+      #   id: metadata
+      #   uses: dependabot/fetch-metadata@v1.5.1
+      #   with:
+      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
+
       - name: Check Whitelist
         id: check-whitelist
         run: |
           dependencies="library2,library3,library5"
+
           # read dependencies into an array libsUpdated
           IFS=', ' read -r -a libsUpdated <<< "$dependencies"
 
@@ -30,25 +37,20 @@ jobs:
           for lib in "${libsUpdated[@]}"
             do
               exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' whitelist.json)
-              if "$exists" == "false"; then
+              if "$exists" != "true"; then
                  all_in_whitelist="false";
                  break;
               fi
             done
 
           if [[ "$all_in_whitelist" == "true" ]]; then
-            echo "All names are in the whitelist."
             echo "::set-output name=allInWhitelist::true"
           else
-            echo "Not all names are in the whitelist."
             echo "::set-output name=allInWhitelist::false"
           fi
-      # - name: Dependabot metadata
-      #   id: metadata
-      #   uses: dependabot/fetch-metadata@v1.5.1
-      #   with:
-      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
-      # - name: Approve and auto-merge
+
+      - name: Approve and auto-merge
+        if: steps.check-whitelist.outputs.allInWhitelist == 'true'
         # See https://github.com/dependabot/fetch-metadata for the outputs
         # If blocks:
         #  - Patches to auto-merge
@@ -57,7 +59,7 @@ jobs:
         #  - Projects that should be auto-merged regardless of level (major, minor or patch)
         # if: |
         #   contains(fromJson('[
-        #     "alpine", # here because I like it
+        #     "alpine",
         #     "golang",
         #     "gorm.io/driver/sqlite",
         #     "github.com/anchore/grype",
@@ -75,7 +77,8 @@ jobs:
         #     "k8s.io/client-go",
         #     "Sonia-corporation/stale"
         #   ]'), 'Sonia-corporation/stale')
-        # run: |
+        run: |
+          echo "Output value is true."
         #   gh pr merge --auto --squash "$PR_URL"
         #   gh pr review --approve "$PR_URL"
         # env:

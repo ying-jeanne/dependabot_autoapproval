@@ -22,13 +22,13 @@ jobs:
       - name: Define automerge strategy
         id: automerge-strategy
         run: | 
-          minorWhitelist=fromJson(`[
+          minorWhitelist=fromJson('[
             {"name": "github.com/aws/aws-sdk-go", "reason": "no issue since"}
-          ]`)
+          ]')
 
-          patchWhitelist=fromJson(`[
+          patchWhitelist=fromJson('[
             {"name": "github.com/xlab/treeprint", "reason": "only used by test"}
-          ]`)
+          ]')
 
           minorlist = toJson(minorWhitelist.*.name)
           patchlist = toJson(patchWhitelist.*.name)

@@ -19,17 +19,18 @@ jobs:
       - name: Read Setting File
         id: read-json
         run: |
-          ls
-          content=$(cat whitelist.json)
-          content="${content//'%'/'%25'}"   # Escape '%' characters
-          content="${content//$'\n'/'%0A'}"  # Escape newlines
-          content="${content//$'\r'/'%0D'}"  # Escape carriage returns
-          echo "::set-output name=jsonData::$content"    
+          libs=$(cat whitelist.json | jq 'map(.name)')
+          # content="${content//'%'/'%25'}"   # Escape '%' characters
+          # content="${content//$'\n'/'%0A'}"  # Escape newlines
+          # content="${content//$'\r'/'%0D'}"  # Escape carriage returns
+          echo "::set-output name=jsonData::$libs"    
 
       - name: Extract whitelist libraries
-        run: |
-          json_data="${{ fromJson(steps.read-json.outputs.jsonData) }}"
+        if: |
+          contains(fromJson(steps.read-json.outputs.jsonData, '1')
           echo "Names and Reasons: $json_data"
+        run: |
+          echo "I love you"
       # - name: Dependabot metadata
       #   id: metadata
       #   uses: dependabot/fetch-metadata@v1.5.1

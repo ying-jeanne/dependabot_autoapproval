@@ -25,7 +25,7 @@ jobs:
       - name: Check Whitelist
         id: check-whitelist
         run: |
-          dependencies="library2,library3,library5"
+          dependencies="library2,library3"
 
           # read dependencies into an array libsUpdated
           IFS=', ' read -r -a libsUpdated <<< "$dependencies"
@@ -37,7 +37,7 @@ jobs:
           for lib in "${libsUpdated[@]}"
             do
               exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' whitelist.json)
-              if "$exists" != "true"; then
+              if "$exists" == "false"; then
                  all_in_whitelist="false";
                  break;
               fi

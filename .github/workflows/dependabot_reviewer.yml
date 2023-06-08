@@ -40,7 +40,7 @@ jobs:
             do
               exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' whitelist.json)
               echo "This is a log messagexxxxxxxxxxxxxxxxxxxxxxxxxxxx $lib, $exists"
-              if "$exists" != "true"; then
+              if $exists != "true"; then
                  echo "This is a log messagexxxxxxxxxxxxxxxxxxxxxxxxxxxx, $exists, $lib"
                  all_in_whitelist="false";
                  break;

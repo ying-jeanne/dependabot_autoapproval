@@ -23,7 +23,7 @@ jobs:
       - name: Define automerge strategy
         id: automerge-strategy
         run: | 
-          minorWhitelist= toJson('[{"name":"github.com/aws/aws-sdk-go","reason":"no issue since"}]')
+          minorWhitelist=toJson('[{"name":"github.com/aws/aws-sdk-go","reason":"no issue since"}]')
 
           # patchWhitelist=fromJson('[
           #   {"name": "github.com/xlab/treeprint", "reason": "only used by test"}

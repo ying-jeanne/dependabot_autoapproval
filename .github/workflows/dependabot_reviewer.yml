@@ -23,7 +23,25 @@ jobs:
       - name: Define automerge strategy
         id: automerge-strategy
         run: | 
-          minorWhitelist=toJson('[{"name":"github.com/aws/aws-sdk-go","reason":"no issue since"}]')
+          minorWhitelist=fromJson('[
+                "alpine",
+                "golang",
+                "gorm.io/driver/sqlite",
+                "github.com/anchore/grype",
+                "github.com/aquasecurity/trivy",
+                "github.com/aws/aws-sdk-go-v2/config",
+                "github.com/bmatcuk/doublestar/v4",
+                "github.com/caarlos0/env/v6",
+                "github.com/prometheus/client_golang",
+                "github.com/sirupsen/logrus",
+                "github.com/slack-go/slack",
+                "github.com/urfave/cli",
+                "github.com/urfave/cli/v2",
+                "k8s.io/api",
+                "k8s.io/apimachinery",
+                "k8s.io/client-go",
+                "Sonia-corporation/stale"
+              ]')
 
           # patchWhitelist=fromJson('[
           #   {"name": "github.com/xlab/treeprint", "reason": "only used by test"}

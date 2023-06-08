@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
-      - name: Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v1.5.1
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      # - name: Dependabot metadata
+      #   id: metadata
+      #   uses: dependabot/fetch-metadata@v1.5.1
+      #   with:
+      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Approve and auto-merge
         # See https://github.com/dependabot/fetch-metadata for the outputs
         # If blocks:

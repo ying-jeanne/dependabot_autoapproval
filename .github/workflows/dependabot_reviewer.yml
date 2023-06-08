@@ -20,14 +20,11 @@ jobs:
         id: read-json
         run: |
           libs=$(cat whitelist.json | jq 'map(.name)')
-          # content="${content//'%'/'%25'}"   # Escape '%' characters
-          # content="${content//$'\n'/'%0A'}"  # Escape newlines
-          # content="${content//$'\r'/'%0D'}"  # Escape carriage returns
           echo "::set-output name=jsonData::$libs"    
 
       - name: Extract whitelist libraries
         if: |
-          contains(fromJson(${{steps.read-json.outputs.jsonData}}), 'library1')
+          contains(fromJson(${{steps.read-json.outputs.jsonData}}), 'library4')
         run: |
           echo "I love you"
       # - name: Dependabot metadata

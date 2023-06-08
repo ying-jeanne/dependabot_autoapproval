@@ -21,7 +21,7 @@ jobs:
         run: |
           names_to_check=["library2", "library3", "library5"]
           is_in_whitelist="false"
-          names= ${{fromJson($(cat whitelist.json | jq -r '.[].name'))}}
+          names= ${{fromJson(cat whitelist.json | jq -r '.[].name')}}
           # echo "${names_to_check}"
           for name in $names_to_check; do
             if ! grep -q "${name}" <<< "$names"; then

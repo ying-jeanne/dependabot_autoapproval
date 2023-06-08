@@ -19,16 +19,22 @@ jobs:
       - name: Check Whitelist
         id: check-whitelist
         run: |
-          names_to_check=["library2", "library3", "library5"]
-          is_in_whitelist="false"
-          names= ${{fromJson(cat whitelist.json | jq -r '.[].name')}}
-          # echo "${names_to_check}"
-          for name in $names_to_check; do
-            if ! grep -q "${name}" <<< "$names"; then
-              all_in_whitelist="false"
-              break
-            fi
-          done
+          dependencies="library2,library3,library5"
+          # read dependencies into an array libsUpdated
+          IFS=', ' read -r -a libsUpdated <<< "$dependencies"
+
+          # loop on the array to make sure all libraries updated are whitelisted
+          all_in_whitelist="true"
+
+          # if one of the element not in white list, set flag to false
+          for i in "${libsUpdated[@]}"
+            do
+              exists = $(cat whitelist.json | jq 'any(.[]; .name == $1)'
+              if "$exists" == "false"; then
+                 all_in_whitelist="false";
+                 break;
+              fi
+            done
 
           if [[ "$all_in_whitelist" == "true" ]]; then
             echo "All names are in the whitelist."

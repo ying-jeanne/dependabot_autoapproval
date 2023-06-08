@@ -1,7 +1,7 @@
 [
   {
-    "name": "library1",
-    "reason": "Reason 1"
+    "name": "github.com/fatih/color",
+    "reason": "The library is only used in test"
   },
   {
     "name": "library2",

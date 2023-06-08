@@ -23,26 +23,26 @@ jobs:
         id: automerge-strategy
         run: | 
           minorWhitelist=fromJson('[
-            {"name": "github.com/aws/aws-sdk-go", "reason": "no issue since"}
+            {"name":"github.com/aws/aws-sdk-go","reason":"no issue since"}
           ]')
 
-          patchWhitelist=fromJson('[
-            {"name": "github.com/xlab/treeprint", "reason": "only used by test"}
-          ]')
+          # patchWhitelist=fromJson('[
+          #   {"name": "github.com/xlab/treeprint", "reason": "only used by test"}
+          # ]')
 
           minorlist = toJson(minorWhitelist.*.name)
-          patchlist = toJson(patchWhitelist.*.name)
+          # patchlist = toJson(patchWhitelist.*.name)
 
           # Store the JSON data in the output variable
           echo "minorlist=$minorlist" >> $GITHUB_ENV
-          echo "patchlist=$patchlist" >> $GITHUB_ENV
+          # echo "patchlist=$patchlist" >> $GITHUB_ENV
 
       - name: Approve and auto-merge
         run: |
-          echo $patchlist
+          # echo $patchlist
           echo $minorlist
         env: 
-          patchlist: ${{ env.patchlist }}
+          # patchlist: ${{ env.patchlist }}
           minorlist: ${{ env.minorlist }}
       #   # We 
       #   if: |

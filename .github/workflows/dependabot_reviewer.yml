@@ -30,7 +30,13 @@ jobs:
             fi
           done
 
-
+          if [[ "$all_in_whitelist" == "true" ]]; then
+            echo "All names are in the whitelist."
+            echo "::set-output name=allInWhitelist::true"
+          else
+            echo "Not all names are in the whitelist."
+            echo "::set-output name=allInWhitelist::false"
+          fi
       # - name: Dependabot metadata
       #   id: metadata
       #   uses: dependabot/fetch-metadata@v1.5.1

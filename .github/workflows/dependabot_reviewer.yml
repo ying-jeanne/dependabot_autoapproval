@@ -15,17 +15,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      
-      - name: Read Whitelist JSON
-        id: read-json
-        run: |
-          echo "::set-output name=jsonData::$(cat whitelist.json)"
 
       - name: Check Whitelist
         id: check-whitelist
         run: |
-          json_data="${{ steps.read-json.outputs.jsonData }}"
-          names_to_check=["library2"]
+          names_to_check='["library2", "library3", "library5"]'
 
           is_in_whitelist="false"
           contains_all_names=$(cat whitelist.json | jq --argjson names "$names_to_check" 'all($names[]; .name)')

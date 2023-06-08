@@ -12,7 +12,6 @@ jobs:
   dependabot-reviewer:
     runs-on: ubuntu-latest
 
-    # Run the job only if the PR is created by dependabot[bot]
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     
     steps:
@@ -27,31 +26,26 @@ jobs:
 
       - name: Check Whitelist
         id: check-whitelist
-        # Run this step only if the update type is semver-patch or semver-minor
-        if: ${{steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'}}
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
         run: |
-          # Set the path to the configuration file
           cfg_path=".github/workflows/whitelist.json"
-          
-          # Read dependencies into an array libsUpdated
+        
           IFS=', ' read -r -a libsUpdated <<< "${{ steps.metadata.outputs.dependency-names }}"
 
           # Loop through the array to make sure all updated libraries are whitelisted
           all_in_whitelist="true"
-
           reason_array=()
           # If any element is not in the whitelist, set the flag to false
-          for lib in "${libsUpdated[@]}"
-            do
-              exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' $cfg_path)
-              if [[ "$exists" != "true" ]]; then
-                echo "$lib is not in the whitelist, manual review is required."
-                all_in_whitelist="false";
-                break;
-              else
-                reason_array+=(jq 'select(.[] | select(.name == "$lib") | .reason)' $cfg_path)
-              fi
-            done
+          for lib in "${libsUpdated[@]}"; do
+            exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' $cfg_path)
+            if [[ "$exists" != "true" ]]; then
+              echo "$lib is not in the whitelist, manual review is required."
+              all_in_whitelist="false"
+              break
+            else
+              reason_array+=(jq 'select(.[] | select(.name == "$lib") | .reason)' $cfg_path)
+            fi
+          done
 
           if [[ "$all_in_whitelist" == "true" ]]; then
             echo "All dependencies are in the whitelist."
@@ -64,7 +58,6 @@ jobs:
           fi
 
       - name: Approve and auto-merge
-        # Run this step only if the check-whitelist step is successful and all dependencies are in the whitelist
         if: steps.check-whitelist.conclusion == 'success' && steps.check-whitelist.outputs.allInWhitelist == 'true'
         run: |
           gh pr merge --auto --squash "$PR_URL"

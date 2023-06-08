@@ -25,6 +25,7 @@ jobs:
         #  - Minor updates to auto-merge
         #  - Updates to auto-merge regardless of level (major, minor or patch)
         #  - Projects that should be auto-merged regardless of level (major, minor or patch)
+        ###
         if: |
           contains(fromJson('[
             "alpine", # here because I like it

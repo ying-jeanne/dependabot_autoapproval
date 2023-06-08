@@ -29,7 +29,7 @@ jobs:
           # if one of the element not in white list, set flag to false
           for lib in "${libsUpdated[@]}"
             do
-              exists = $(cat whitelist.json | jq 'any(.[]; .name == $lib)')
+              exists = $(jq --arg lib "$lib" 'any(.[]; .name == $lib)' whitelist.json)
               if "$exists" == "false"; then
                  all_in_whitelist="false";
                  break;

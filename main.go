@@ -1,33 +1,20 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
+	"fmt"
+
+	"github.com/fatih/color"
+	"github.com/google/go-cmp/cmp"
 )
 
 func main() {
-	// Create a Gin router
-	router := gin.Default()
+	color.Green("Hello, World!")
 
-	// Create a Redis client
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
-
-	// Define a route handler
-	router.GET("/", func(c *gin.Context) {
-		// Use the Redis client to get a value
-		val, err := client.Get(c, "mykey").Result()
-		if err != nil {
-			c.String(500, "Error: "+err.Error())
-			return
-		}
-
-		c.String(200, "Value: "+val)
-	})
-
-	// Start the server
-	router.Run(":8080")
+	// Example usage of go-cmp library
+	want := []int{1, 2, 3}
+	got := []int{1, 2, 4}
+	if diff := cmp.Diff(want, got); diff != "" {
+		fmt.Println("Difference found:")
+		fmt.Println(diff)
+	}
 }

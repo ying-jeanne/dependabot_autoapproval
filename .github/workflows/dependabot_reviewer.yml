@@ -48,8 +48,8 @@ jobs:
           done
 
           if [[ "$all_in_whitelist" == "true" ]]; then
-            echo "All dependencies are in the whitelist. with reason $reasons"
             reasons=$(IFS=','; echo "${reason_array[*]}")
+            echo "All dependencies are in the whitelist. with reason $reasons"
             echo "::set-output name=reasons::$reasons"
             echo "::set-output name=allInWhitelist::true"
           else

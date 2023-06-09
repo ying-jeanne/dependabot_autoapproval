@@ -74,3 +74,6 @@ jobs:
           gh pr comment $PR_URL --body "**This library is not auto-approved** \
           Unfortunately, this library is not included in our whitelist, which means it cannot be auto-approved. \
           We have a predefined set of libraries that meet our compatibility, security, and reliability criteria."
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

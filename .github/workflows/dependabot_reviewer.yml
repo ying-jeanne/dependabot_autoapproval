@@ -77,7 +77,7 @@ jobs:
           If you believe it should be considered for auto-approval, please open a pull request to add \
           it to the whitelist configuration. 
 
-          To add this library to the whitelist, please modify the [.github/workflow/whitelist.json](https://https://github.com/grafana/mimir/.github/workflow/whitelist.json) file and \
+          To add this library to the whitelist, please modify the [whitelist.json](https://https://github.com/grafana/mimir/.github/workflow/whitelist.json) file and \
           include the necessary details for review."
 
         env:

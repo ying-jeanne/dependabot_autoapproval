@@ -2,46 +2,47 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-	"time"
 
-	"github.com/go-redis/redis/v8"
-	"github.com/gorilla/mux"
+	_ "github.com/go-sql-driver/mysql"
+	"xorm.io/xorm"
 )
 
+// User represents a user in the database
+type User struct {
+	ID   int64
+	Name string
+	Age  int
+}
+
 func main() {
-	// Create a new Redis client
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
-
-	// Ping Redis to check the connection
-	pong, err := redisClient.Ping(redisClient.Context()).Result()
+	// Create a new engine for MySQL
+	engine, err := xorm.NewEngine("mysql", "username:password@tcp(localhost:3306)/database_name?charset=utf8")
 	if err != nil {
-		log.Fatal("Failed to connect to Redis:", err)
-	}
-	fmt.Println("Connected to Redis:", pong)
-
-	// Create a new Gorilla mux router
-	router := mux.NewRouter()
-
-	// Define a route handler
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Hello, World!")
-	})
-
-	// Create a server with a timeout
-	server := &http.Server{
-		Addr:         ":8080",
-		Handler:      router,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		panic(err)
 	}
 
-	// Start the server
-	fmt.Println("Server started on port 8080")
-	log.Fatal(server.ListenAndServe())
+	// Create the users table if it doesn't exist
+	err = engine.Sync2(new(User))
+	if err != nil {
+		panic(err)
+	}
+
+	// Insert a new user into the database
+	user := &User{Name: "John Doe", Age: 30}
+	_, err = engine.Insert(user)
+	if err != nil {
+		panic(err)
+	}
+
+	// Query all users from the database
+	users := make([]User, 0)
+	err = engine.Find(&users)
+	if err != nil {
+		panic(err)
+	}
+
+	// Print the retrieved users
+	for _, u := range users {
+		fmt.Printf("ID: %d, Name: %s, Age: %d\n", u.ID, u.Name, u.Age)
+	}
 }

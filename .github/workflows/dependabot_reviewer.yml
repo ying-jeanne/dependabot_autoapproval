@@ -43,7 +43,7 @@ jobs:
               all_in_whitelist="false"
               break
             else
-              reason_array+=$(jq -r '.[] | select(.name == $lib) | .reason' $cfg_path)
+              reason_array+=("$(jq -r --arg lib "$lib" '.[] | select(.name == $lib) | .reason' $cfg_path)")
             fi
           done
 

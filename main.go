@@ -1,48 +1,51 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
-	"xorm.io/xorm"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-// User represents a user in the database
-type User struct {
-	ID   int64
-	Name string
-	Age  int
-}
-
 func main() {
-	// Create a new engine for MySQL
-	engine, err := xorm.NewEngine("mysql", "username:password@tcp(localhost:3306)/database_name?charset=utf8")
+	// SQLite Connection
+	sqliteDB, err := sql.Open("sqlite3", "./test.db")
 	if err != nil {
 		panic(err)
 	}
+	defer sqliteDB.Close()
 
-	// Create the users table if it doesn't exist
-	err = engine.Sync2(new(User))
+	// Create SQLite table
+	_, err = sqliteDB.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT,
+			age INTEGER
+		)
+	`)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("SQLite table created successfully.")
 
-	// Insert a new user into the database
-	user := &User{Name: "John Doe", Age: 30}
-	_, err = engine.Insert(user)
+	// PostgreSQL Connection
+	pgDB, err := sql.Open("postgres", "host=localhost port=5432 user=youruser password=yourpassword dbname=yourdbname sslmode=disable")
 	if err != nil {
 		panic(err)
 	}
+	defer pgDB.Close()
 
-	// Query all users from the database
-	users := make([]User, 0)
-	err = engine.Find(&users)
+	// Create PostgreSQL table
+	_, err = pgDB.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id SERIAL PRIMARY KEY,
+			name TEXT,
+			age INTEGER
+		)
+	`)
 	if err != nil {
 		panic(err)
 	}
-
-	// Print the retrieved users
-	for _, u := range users {
-		fmt.Printf("ID: %d, Name: %s, Age: %d\n", u.ID, u.Name, u.Age)
-	}
+	fmt.Println("PostgreSQL table created successfully.")
 }

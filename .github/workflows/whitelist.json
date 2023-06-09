@@ -1,10 +1,10 @@
 [
   {
-    "name": "xorm.io/xorm",
+    "name": "github.com/lib/pq",
     "reason": "the library is only used in test"
   },
   {
-    "name": "github.com/go-sql-driver/sqlite",
+    "name": "database/sql",
     "reason": "the library is stable and has no known vulnerabilities"
   }
 ]

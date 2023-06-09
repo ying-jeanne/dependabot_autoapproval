@@ -2,38 +2,46 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"time"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
+	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/mux"
 )
 
-type User struct {
-	ID       uuid.UUID `validate:"required"`
-	Username string    `validate:"required"`
-	Email    string    `validate:"required,email"`
-}
-
 func main() {
-	// Generate a UUID
-	id := uuid.New()
+	// Create a new Redis client
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
 
-	// Create a new user
-	user := User{
-		ID:       id,
-		Username: "john123",
-		Email:    "john@example.com",
-	}
-
-	// Validate the user struct
-	validate := validator.New()
-	err := validate.Struct(user)
+	// Ping Redis to check the connection
+	pong, err := redisClient.Ping(redisClient.Context()).Result()
 	if err != nil {
-		fmt.Println("Validation error:", err)
-		return
+		log.Fatal("Failed to connect to Redis:", err)
+	}
+	fmt.Println("Connected to Redis:", pong)
+
+	// Create a new Gorilla mux router
+	router := mux.NewRouter()
+
+	// Define a route handler
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Hello, World!")
+	})
+
+	// Create a server with a timeout
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
-	// Print the user details
-	fmt.Println("User ID:", user.ID)
-	fmt.Println("Username:", user.Username)
-	fmt.Println("Email:", user.Email)
+	// Start the server
+	fmt.Println("Server started on port 8080")
+	log.Fatal(server.ListenAndServe())
 }

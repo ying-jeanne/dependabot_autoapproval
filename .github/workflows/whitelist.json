@@ -1,10 +1,10 @@
 [
   {
     "name": "xorm.io/xorm",
-    "reason": "The library is only used in test"
+    "reason": "the library is only used in test"
   },
   {
     "name": "github.com/go-sql-driver/sqlite",
-    "reason": "The library is stable and has no known vulnerabilities"
+    "reason": "the library is stable and has no known vulnerabilities"
   }
 ]

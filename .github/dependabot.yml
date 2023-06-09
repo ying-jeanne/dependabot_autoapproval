@@ -9,5 +9,5 @@ updates:
     directory: /
     schedule:
       interval: "daily"
-      time: "00:29"
+      time: "13:40"
     open-pull-requests-limit: 5 

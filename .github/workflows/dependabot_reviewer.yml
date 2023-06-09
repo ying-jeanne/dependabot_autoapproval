@@ -35,6 +35,7 @@ jobs:
           # Loop through the array to make sure all updated libraries are whitelisted
           all_in_whitelist="true"
           reason_array=()
+
           # If any element is not in the whitelist, set the flag to false
           for lib in "${libsUpdated[@]}"; do
             exists=$(jq --arg lib "$lib" 'any(.[]; .name == $lib)' $cfg_path)
@@ -49,7 +50,7 @@ jobs:
 
           if [[ "$all_in_whitelist" == "true" ]]; then
             reasons=$(IFS=','; echo "${reason_array[*]}")
-            echo "All dependencies are in the whitelist. with reason $reason_array, $reasons"
+            echo "All dependencies are in the whitelist. with reason $reasons"
             echo "::set-output name=reasons::$reasons"
             echo "::set-output name=allInWhitelist::true"
           else
@@ -60,10 +61,12 @@ jobs:
       - name: Approve and auto-merge
         if: steps.check-whitelist.conclusion == 'success' && steps.check-whitelist.outputs.allInWhitelist == 'true'
         run: |
-          # gh pr merge --auto --squash "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
           gh pr review $PR_URL \
-          --approve -b "I'm **approving** this pull request because it includes a patch or minor update dependencies in \
-          whitelist, because ${{ steps.check-whitelist.outputs.reasons}}"
+          --approve -b "**I'm approving** this pull request because it includes a patch or minor \
+          update to dependencies that are already whitelisted.
+
+          The reason this library is whitelisted is that ${{ steps.check-whitelist.outputs.reasons}}"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

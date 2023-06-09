@@ -3,7 +3,7 @@ module github.com/ying-jeanne/dependabot_autoapproval
 go 1.20
 
 require (
-	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-sql-driver/mysql v1.7.1
 	xorm.io/xorm v1.3.2
 )
 

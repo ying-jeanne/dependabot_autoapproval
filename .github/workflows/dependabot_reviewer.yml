@@ -60,7 +60,7 @@ jobs:
       - name: Approve and auto-merge
         if: steps.check-whitelist.conclusion == 'success' && steps.check-whitelist.outputs.allInWhitelist == 'true'
         run: |
-          gh pr merge --auto --squash "$PR_URL"
+          # gh pr merge --auto --squash "$PR_URL"
           gh pr review $PR_URL \
           --approve -b "I'm **approving** this pull request because it includes a patch or minor update in \
           whitelist, and ${{ steps.check-whitelist.outputs.reasons}}"

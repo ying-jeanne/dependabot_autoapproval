@@ -43,7 +43,7 @@ jobs:
               all_in_whitelist="false"
               break
             else
-              reason_array+=(jq 'select(.[] | select(.name == "$lib") | .reason)' $cfg_path)
+              reason_array+=$(jq 'select(.[] | select(.name == "$lib") | .reason)' $cfg_path)
             fi
           done
 
@@ -62,8 +62,8 @@ jobs:
         run: |
           gh pr merge --auto --squash "$PR_URL"
           gh pr review $PR_URL \
-          --approve -b "I'm **approving** this pull request because it includes **a patch or minor update in \
-          whitelist**, with reason ${{ steps.check-whitelist.outputs.reasons}}."
+          --approve -b "I'm **approving** this pull request because it includes a patch or minor update in \
+          whitelist, and **${{ steps.check-whitelist.outputs.reasons}}**."
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

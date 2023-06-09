@@ -71,12 +71,12 @@ jobs:
       - name: Manual review is required
         if: steps.check-whitelist.conclusion != 'success' || steps.check-whitelist.outputs.allInWhitelist == 'false'
         run: |
-          gh pr comment $PR_URL --body "**This library is not auto-approved** \n
+          gh pr comment $PR_URL --body "**This library is not auto-approved**
           Unfortunately, this library is not included in our whitelist, which means it cannot be auto-approved. \
           If you believe it should be considered for auto-approval, please open a pull request to add \
-          it to the whitelist configuration. \n
+          it to the whitelist configuration. 
           To add this library to the whitelist, please modify the `.github/workflow/whitelist.json` file and \
-          include the necessary details for review.
+          include the necessary details for review."
 
         env:
           PR_URL: ${{github.event.pull_request.html_url}}

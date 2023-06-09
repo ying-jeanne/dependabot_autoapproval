@@ -48,7 +48,7 @@ jobs:
           done
 
           if [[ "$all_in_whitelist" == "true" ]]; then
-            echo "All dependencies are in the whitelist."
+            echo "All dependencies are in the whitelist. with reason $reasons"
             reasons=$(IFS=','; echo "${reason_array[*]}")
             echo "::set-output name=reasons::$reasons"
             echo "::set-output name=allInWhitelist::true"
@@ -63,7 +63,7 @@ jobs:
           gh pr merge --auto --squash "$PR_URL"
           gh pr review $PR_URL \
           --approve -b "I'm **approving** this pull request because it includes a patch or minor update in \
-          whitelist, and **${{ steps.check-whitelist.outputs.reasons}}**."
+          whitelist, and ${{ steps.check-whitelist.outputs.reasons}}"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

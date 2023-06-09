@@ -1,6 +1,6 @@
 [
   {
-    "name": "github.com/fatih/color",
+    "name": "github.com/gin-gonic/gin",
     "reason": "The library is only used in test"
   },
   {

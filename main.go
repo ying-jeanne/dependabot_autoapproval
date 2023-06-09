@@ -1,39 +1,33 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
+	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 )
 
-type User struct {
-	ID       uuid.UUID `validate:"required"`
-	Username string    `validate:"required"`
-	Email    string    `validate:"required,email"`
-}
-
 func main() {
-	// Generate a UUID
-	id := uuid.New()
+	// Create a Gin router
+	router := gin.Default()
 
-	// Create a new user
-	user := User{
-		ID:       id,
-		Username: "john123",
-		Email:    "john@example.com",
-	}
+	// Create a Redis client
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
 
-	// Validate the user struct
-	validate := validator.New()
-	err := validate.Struct(user)
-	if err != nil {
-		fmt.Println("Validation error:", err)
-		return
-	}
+	// Define a route handler
+	router.GET("/", func(c *gin.Context) {
+		// Use the Redis client to get a value
+		val, err := client.Get(c, "mykey").Result()
+		if err != nil {
+			c.String(500, "Error: "+err.Error())
+			return
+		}
 
-	// Print the user details
-	fmt.Println("User ID:", user.ID)
-	fmt.Println("Username:", user.Username)
-	fmt.Println("Email:", user.Email)
+		c.String(200, "Value: "+val)
+	})
+
+	// Start the server
+	router.Run(":8080")
 }

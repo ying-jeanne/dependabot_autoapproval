@@ -1,9 +1,6 @@
 name: Auto-review vendor PRs
 
-on:
-  pull_request_target:
-    types:
-      - labeled
+on: pull_request_target
 
 permissions:
   pull-requests: write

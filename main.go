@@ -48,4 +48,5 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("PostgreSQL table created successfully.")
+	fmt.Println("I am a test line here.")
 }

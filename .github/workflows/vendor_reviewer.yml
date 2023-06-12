@@ -18,7 +18,7 @@ jobs:
       - name: Approve and auto-merge
         if: ${{ startsWith(github.event.pull_request.head.ref, 'update-vendored-mimir') }}
         run: |
-          gh pr merge --auto --squash "${{ env.PR_URL }}"
+          gh pr merge --auto --squash "$PR_URL"
           gh pr review "${{ env.PR_URL }}" \
             --approve -b "**I'm approving** this Mimir vendor PR
 

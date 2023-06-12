@@ -15,18 +15,8 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'vendored') }}
     
     steps:
-      - name: Check branch name
-        id: check-mimir-vendor
-        run: |
-          branch_name="${{ github.event.pull_request.head.ref }}"
-          if [[ $branch_name != "update-vendored-mimir"* ]]; then
-            echo "IsVendorPR=false" >> $GITHUB_ENV
-          else
-            echo "IsVendorPR=true" >> $GITHUB_ENV
-          fi
-
       - name: Approve and auto-merge
-        if: steps.check-mimir-vendor.conclusion == 'success' && steps.check-mimir-vendor.outputs.IsVendorPR == 'true'
+        if: ${{ startsWith(github.event.pull_request.head.ref, 'update-vendored-mimir') }}
         run: |
           gh pr merge --auto --squash "${{ env.PR_URL }}"
           gh pr review "${{ env.PR_URL }}" \

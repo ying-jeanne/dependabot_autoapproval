@@ -28,6 +28,7 @@ jobs:
     - uses: actions/setup-go@v4
       with:
         go-version: ${{ needs.go-version.outputs.go-version }}
+    - name: Download Dependencies
       run: |
         go mod download
         go mod vendor

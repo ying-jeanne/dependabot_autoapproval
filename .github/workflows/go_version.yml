@@ -11,7 +11,7 @@ jobs:
       - name: Get build image from Makefile
         id: build_image_step
         run: |
-          build_image=mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2
+          build_image=grafana/mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2
           echo "$build_image"
           echo "build_image=$build_image" >> "$GITHUB_OUTPUT"
     outputs:
@@ -24,12 +24,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Get Go Version
-      uses: mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2
+      id: go-version
+      uses: grafana/mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2
       with:
         command: echo "go-version=$(go version)" >> "$GITHUB_OUTPUT" 
     - uses: actions/setup-go@v4
       with:
-        go-version: ${{ needs.go-version.outputs.go-version }}
+        go-version: ${{ steps.go-version.outputs.go-version }}
     - name: Download Dependencies
       run: |
         go mod download

@@ -21,10 +21,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Get Go Version
-      container: 
-        image: ${{ needs.prepare.outputs.build_image }}
-      id: go-version
-      run: echo ::set-output name=go-version::$(go version)
+      uses: ${{ needs.prepare.outputs.build_image }}
+      with:
+        command: echo "go-version=$(go version)" >> "$GITHUB_OUTPUT" 
     - uses: actions/setup-go@v4
       with:
         go-version: ${{ needs.go-version.outputs.go-version }}

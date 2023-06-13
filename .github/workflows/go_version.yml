@@ -11,7 +11,7 @@ jobs:
       - name: Get build image from Makefile
         id: build_image_step
         run: |
-          build_image=grafana/mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2
+          build_image="grafana/mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2"
           echo "$build_image"
           echo "build_image=$build_image" >> "$GITHUB_OUTPUT"
     outputs:
@@ -25,7 +25,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Get Go Version
       id: go-version
-      uses: grafana/mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2
+      uses: "grafana/mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2"
       with:
         command: echo "go-version=$(go version)" >> "$GITHUB_OUTPUT" 
     - uses: actions/setup-go@v4

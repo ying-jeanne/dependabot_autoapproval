@@ -38,5 +38,8 @@ jobs:
         go-version: ${{ needs.goversion.outputs.version }}
     - name: Download Dependencies
       run: |
+        echo "xxxxxxxxxxxxxxxxxx $version"
         go mod download
         go mod vendor
+      env: 
+        version: ${{ needs.goversion.outputs.version }}

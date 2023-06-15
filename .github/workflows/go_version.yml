@@ -20,7 +20,8 @@ jobs:
   goversion:
     runs-on: ubuntu-latest
     needs: prepare
-    container: ${{ needs.prepare.outputs.build_image }}
+    container: 
+      image: ${{ needs.prepare.outputs.build_image }}
     steps:
       - name: Get Go Version
         id: go-version

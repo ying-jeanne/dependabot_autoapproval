@@ -26,8 +26,8 @@ jobs:
       - name: Get Go Version
         id: go-version
         run: |
-          version=$(/usr/local/go/bin/go version | awk '{print $3}' | sed 's/go//')
-          echo "version=$(version)" >> "$GITHUB_OUTPUT"
+          version=$(go version | awk '{print $3}' | sed 's/go//')
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
     outputs:
       version: ${{ steps.go-version.outputs.version }}
 

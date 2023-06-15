@@ -19,7 +19,8 @@ jobs:
   
   goversion:
     runs-on: ubuntu-latest
-    container: grafana/mimir-build-image:felix-update-go-to-1.20.5-31cf42ae2   
+    needs: prepare
+    container: ${{ needs.prepare.outputs.build_image }}
     steps:
       - name: Get Go Version
         id: go-version
@@ -31,7 +32,9 @@ jobs:
 
   compare-manifests:
     runs-on: ubuntu-latest
-    needs: [prepare, goversion]
+    needs: 
+      - prepare
+      - goversion
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-go@v4

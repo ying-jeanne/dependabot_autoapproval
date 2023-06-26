@@ -1,0 +1,31 @@
+name: Auto-close vendor PRs
+
+on: 
+  pull_request:
+    types: [labeled, unlabeled, synchronize, opened, edited, ready_for_review, reopened]
+
+jobs:
+  dependabot-reviewer:
+    runs-on: ubuntu-latest  
+    steps:
+      - uses: actions/checkout@v3
+      - name: Close Old Vendor PRs
+        run: |
+          filter_date=$(date -u +%Y-%m-%d)
+          echo "$filter_date"
+          prs=$(gh pr list --state open --json labels,url,number,updatedAt --search "created:<$filter_date" --jq '[.[] | select(.labels | map(.name) | contains(["vendored","automatic pr"]))] | .[].number')
+          echo "$prs"
+
+          for pr in $prs; do
+            gh pr comment $pr -b "This PR is automatically closed by GrafanaBot. \
+              A new PR is opened to update the vendored dependencies. link to the new PR: "
+              # ${{ github.event.pull_request.html_url }}"
+            gh pr close $pr --delete-branch
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GRAFANABOT_TOKEN }}
+      - name: Add Comment To PR
+        run: |
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GRAFANABOT_TOKEN }}

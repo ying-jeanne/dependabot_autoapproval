@@ -6,5 +6,9 @@
   {
     "name": "database/sql",
     "reason": "the library is stable and has no known vulnerabilities"
+  },
+  {
+    "name": "github.com/ory/dockertest",
+    "reason": "the library is only used in test"
   }
 ]

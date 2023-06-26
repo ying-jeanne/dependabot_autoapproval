@@ -24,6 +24,7 @@ To use the Dependabot Autoapproval GitHub Action in your repository, follow thes
     }
   ]
 ```
+
 Customize the library names, reasons to your project's requirements.
 
 Commit and push the changes to your repository. The Dependabot Autoapproval GitHub Action will be triggered when a pull request is opened by Dependabot, automatically approving it if the library is present in the whitelist.
